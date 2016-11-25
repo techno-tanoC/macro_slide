@@ -42,7 +42,8 @@ end
 メリット
 
 * コンパイル時計算ができる
-  * Elixirではコンパイル時にユニコードのデータを読み込み、色々な関数を定義している
+  * 外部からデータを読み込み、プログラムに反映させる
+  * Elixirの実装自体でコンパイル時にユニコードのデータを読み込み、色々な関数を定義している
 * 新たな構文を作ることができる
 * インライン化
 
@@ -157,6 +158,11 @@ select: c
 
 ## Ecto
 
+```elixir
+ast = quote do ~~~~ end
+Macro.expand(ast, __ENV__)
+```
+
 AST
 
 ```elixir
@@ -202,6 +208,11 @@ AST
 マクロ展開後のコード
 
 ```elixir
+ast = quote do ~~~~ end
+Macro.expand(ast, __ENV__) |> Macro.to_string
+```
+
+```elixir
 %{
   __struct__: Ecto.Query,
   assocs: [],
@@ -230,11 +241,11 @@ AST
 * routerのHTTPメソッド
   * get, post, put, patch, delete, options, connect, trace, head
   * resources
-* Model, Controller, Viewなどで必要なコードのインポート
+* Model, Controller, Viewなどで必要なモジュールのインポート
 
 ---
 
-# マクロを作る
+# 簡単なマクロを作る
 
 ---
 
@@ -252,7 +263,7 @@ end
 
 ## defmacro
 
-* マクロの定義の宣言
+* マクロ定義の宣言
 * ASTが引数として渡される
 * ASTを返さなければいけない
 
@@ -281,3 +292,20 @@ end
 quote内にコードを埋め込む
 
 ---
+
+## ifを作ってみる
+
+---
+
+```elixir
+defmacro my_if(clause, do: x, else: y) do
+  quote do
+    case clause do
+      nil   -> unquote(y)
+      false -> unquote(y)
+      _     -> unquote(x)
+    end
+  end
+end
+```
+
